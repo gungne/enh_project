@@ -33,8 +33,15 @@ def pfm2pwm(pfm):
 			pwm[nt,pos] = float(pfm[nt,pos])/float(sum(pfm[:,pos]))
 	return pwm 
 
+def shannon_entropy(matrix_v):
+	entropy = 0
+	for nt in range(0,4)
+		entropy = entropy -np.log(2,matrix_v[nt])
+	return entropy
+
 def shannon_trimmer(pwm,l_kmer):
-	for pos in range(0,np.shape(pfm[0,:])[1]):
+	for pos in range(0,np.shape(pfm[0,:])[1]):	
+		print(shannon_entropy(pwm[:,pos]))
 
 
 
