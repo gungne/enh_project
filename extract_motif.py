@@ -63,18 +63,25 @@ def shannon_trimmer(pwm,l_kmer):
 	pwm_short =	pwm[:,max_position:max_position+l_kmer]	
 	return pwm_short
 
+def tf_proc(database_content,entry_name,l_kmer):
+	ref_dict = dict()
+	ref_dict_short = dict()
+	pfm_comp = re.findall('\>.*'+entry_name+'\nA.*\nC.*\nG.*\nT.*',database_content,re.M|re.I)[0]
+	tf_name,tf_pfm = pfm_parser(entry_name,pfm_comp)
+	ref_dict[tf_name] = pfm2pwm(tf_pfm) 
+	short_tf_pwm = shannon_trimmer(pfm2pwm(tf_pfm),l_kmer) 
+	ref_dict_short[tf_name] = short_tf_pwm
+	return(ref_dict_short,entry_name)
 entry_name = sys.argv[1]
 
 JASPAR_database = "pfm_vertebrates.txt"
 handle_database = open(JASPAR_database)
 database_content = handle_database.read()
-ref_dict = dict()
-ref_dict_short = dict()
-pfm_comp = re.findall('\>.*'+entry_name+'\nA.*\nC.*\nG.*\nT.*',database_content,re.M|re.I)[0]
-tf_name,tf_pfm = pfm_parser(entry_name,pfm_comp)
-ref_dict[tf_name] = pfm2pwm(tf_pfm) 
-short_tf_pwm = shannon_trimmer(pfm2pwm(tf_pfm),6) 
-ref_dict_short[tf_name] = short_tf_pwm
-print(ref_dict_short['PAX6'])
+ref_dict_short,entry_name = tf_proc(database_content,entry_name,6)
 # single_motif = 
-# print(pfm_comp)
+print(ref_dict_short)
+
+
+
+
+
