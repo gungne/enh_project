@@ -22,16 +22,25 @@ def pfm_parser(entry_name,entry):
 			# print(pfm)
 		else:
 			pfm=np.vstack([pfm,counts])
+
 	return entry_name,pfm
 
 def pfm2pwm(pfm):
 	pwm = np.zeros(np.shape(pfm))
-	pwm.astype(float)
+	pwm = pwm.astype(float)
+	pfm = pfm.astype(float)
+	# print(pfm)
 	# print(np.shape(pfm[0,:])[1])
 	for pos in range(0,np.shape(pfm[0,:])[1]):
 		for nt in range(0,4):
 			# print(pfm[nt,pos]/sum(pfm[:,pos]))
-			pwm[nt,pos] = float(pfm[nt,pos])/float(sum(pfm[:,pos]))
+			if pfm[nt,pos] == 0:
+				pfm[nt,pos] = sum(pfm[:,pos])*0.01
+
+	for pos in range(0,np.shape(pfm[0,:])[1]):
+		for nt in range(0,4):
+			n_total = sum(pfm[:,pos])
+			pwm[nt,pos] = pfm[nt,pos]/n_total
 	return pwm 
 
 def shannon_entropy(array_v):
@@ -52,10 +61,8 @@ def shannon_trimmer(pwm,l_kmer):
 	max_position =0
 	# print(shannon_pos)
 	for n in range(0,len(shannon_pos)-l_kmer):
-
 		temp_information = 2*l_kmer -  sum(shannon_pos[n:n+l_kmer])
-
-		print(max_infomation,max_position)
+		# print(max_infomation,max_position)
 		if  temp_information>max_infomation:
 			
 			max_infomation = temp_information
@@ -63,23 +70,115 @@ def shannon_trimmer(pwm,l_kmer):
 	pwm_short =	pwm[:,max_position:max_position+l_kmer]	
 	return pwm_short
 
-def tf_proc(database_content,entry_name,l_kmer):
+def tf_proc(database_content,entry,l_kmer):
 	ref_dict = dict()
 	ref_dict_short = dict()
-	pfm_comp = re.findall('\>.*'+entry_name+'\nA.*\nC.*\nG.*\nT.*',database_content,re.M|re.I)[0]
-	tf_name,tf_pfm = pfm_parser(entry_name,pfm_comp)
-	ref_dict[tf_name] = pfm2pwm(tf_pfm) 
-	short_tf_pwm = shannon_trimmer(pfm2pwm(tf_pfm),l_kmer) 
-	ref_dict_short[tf_name] = short_tf_pwm
-	return(ref_dict_short,entry_name)
-entry_name = sys.argv[1]
+	for entry_name in entry:
+		pfm_comp = re.findall('\>.*'+entry_name+'\nA.*\nC.*\nG.*\nT.*',database_content,re.M|re.I)[0]
+		tf_name,tf_pfm = pfm_parser(entry_name,pfm_comp)
+		ref_dict[tf_name] = pfm2pwm(tf_pfm) 
+		short_tf_pwm = shannon_trimmer(pfm2pwm(tf_pfm),l_kmer) 
+		ref_dict_short[tf_name] = short_tf_pwm
+	return ref_dict_short
 
-JASPAR_database = "pfm_vertebrates.txt"
-handle_database = open(JASPAR_database)
-database_content = handle_database.read()
-ref_dict_short,entry_name = tf_proc(database_content,entry_name,6)
-# single_motif = 
-print(ref_dict_short)
+def fasta_parser(file):
+	fasta_dict={}
+	records = re.findall(">.*\n[ATCGatcg\n]*",file.read(),re.M)
+	for fasta in records:
+		id_sq = re.sub("[>\n]","",re.findall(">.*\n",fasta,re.M)[0])
+		fasta_dict[id_sq] = re.sub("[\n]","",re.sub(">.*\n","",fasta)) 
+
+	return fasta_dict
+def nt_convert(char):
+	if char == 'A':
+		row = 0
+	if char == 'C':
+		row = 1
+	if char == 'G':
+		row = 2
+	if char == 'T':
+		row = 3
+	return row
+def kmer_score(pwm,kmer):
+	# print(np.shape(pwm))
+	total_score=1
+	if np.shape(pwm)[1] != len(kmer):
+		print('error')
+	else:
+		for index,nt in enumerate(kmer):
+			# print(pwm[nt_convert(nt),index])
+			# print(nt_convert(nt),index)
+			total_score = total_score * pwm[nt_convert(nt),index]*100
+			# print(total_score)
+	return total_score
+def pfm_writer(pfm,kmer):
+	for index,nt in enumerate(kmer):
+		# print(nt_convert(nt),index)
+		pfm[nt_convert(nt),index] = pfm[nt_convert(nt),index]+1
+	return pfm
+
+
+if __name__ == "__main__":
+	entry_name = sys.argv[1]
+	fasta_name = sys.argv[2] 
+
+	JASPAR_database = "sample_database.txt"
+	handle_database = open(JASPAR_database)
+	database_content = handle_database.read()
+
+	handle_fasta = open(fasta_name)
+
+
+	ref_pwm_short = tf_proc(database_content,entry_name,6)
+	# single_motif = 
+	# print(ref_dict_short)
+	fasta_dict = fasta_parser(handle_fasta)
+	l_kmer = 6
+
+	# print(ref_pwm_short)
+	new_pfm = np.zeros([4,6])
+
+	for read_nmer in fasta_dict:
+		kmers = [ fasta_dict[read_nmer][n:n+l_kmer] for n in range(0,len(fasta_dict[read_nmer])-l_kmer+1)]
+		best_kmer = ''
+		best_score = 0
+		for kmer in kmers:
+			temp_score = kmer_score(ref_pwm_short[entry_name],kmer)
+			# print(temp_score)
+			if temp_score > best_score:
+			# whatif the score are tied?
+				best_kmer = kmer
+				best_score = temp_score
+		new_pfm = pfm_writer(new_pfm,best_kmer)
+		# print(best_score)
+	print(ref_pwm_short[entry_name])
+	print(new_pfm)
+		# if best_kmer =='':
+		# 	print(fasta_dict[read_nmer])
+		# else:
+		# 	print(best_kmer)	
+
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
