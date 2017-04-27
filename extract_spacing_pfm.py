@@ -71,7 +71,10 @@ def pfm_writer(pfm,kmer):
 		# print(nt_convert(nt),index)
 		pfm[nt_convert(nt),index] = pfm[nt_convert(nt),index]+1
 	return pfm
-
+def output_pfm_dict(dict_pfm):
+	for item in dict_pfm:
+		print('>'+item)
+		print('A  ['+ [ number+'\t' for nt in dict_pfm[item]])
 fasta_exprun = sys.argv[1] 
 fasta_dir = sys.argv[2]
 l_kmer = 6
