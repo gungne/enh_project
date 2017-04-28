@@ -73,13 +73,34 @@ def shannon_trimmer(pwm,l_kmer):
 def tf_proc(database_content,entry,l_kmer):
 	ref_dict = dict()
 	ref_dict_short = dict()
+	if type(entry) is list:
+		pass
+	else:
+		entry=[entry]
 	for entry_name in entry:
+		print(entry_name)
 		pfm_comp = re.findall('\>.*'+entry_name+'\nA.*\nC.*\nG.*\nT.*',database_content,re.M|re.I)[0]
 		tf_name,tf_pfm = pfm_parser(entry_name,pfm_comp)
 		ref_dict[tf_name] = pfm2pwm(tf_pfm) 
 		short_tf_pwm = shannon_trimmer(pfm2pwm(tf_pfm),l_kmer) 
 		ref_dict_short[tf_name] = short_tf_pwm
 	return ref_dict_short
+
+def tf_proc_parse(database_content,entry,l_kmer):
+	ref_dict = dict()
+	# ref_dict_short = dict()
+	if type(entry) is list:
+		pass
+	else:
+		entry=[entry]
+	for entry_name in entry:
+		print(entry_name)
+		pfm_comp = re.findall('\>.*'+entry_name+'\nA.*\nC.*\nG.*\nT.*',database_content,re.M|re.I)[0]
+		tf_name,tf_pfm = pfm_parser(entry_name,pfm_comp)
+		ref_dict[tf_name] = tf_pfm 
+		# short_tf_pwm = shannon_trimmer(pfm2pwm(tf_pfm),l_kmer) 
+		# ref_dict_short[tf_name] = short_tf_pwm
+	return ref_dict
 
 def fasta_parser(file):
 	fasta_dict={}
@@ -99,6 +120,18 @@ def nt_convert(char):
 	if char == 'T':
 		row = 3
 	return row
+
+def nt_rconvert(num):
+	if num == 0:
+		row = 'A'
+	if num == 1:
+		row = 'C'
+	if num == 2:
+		row = 'G'
+	if num == 3:
+		row = 'T'
+	return row
+
 def kmer_score(pwm,kmer):
 	# print(np.shape(pwm))
 	total_score=1
@@ -117,6 +150,41 @@ def pfm_writer(pfm,kmer):
 		pfm[nt_convert(nt),index] = pfm[nt_convert(nt),index]+1
 	return pfm
 
+def output_pfm_dict(dict_pfm):
+	for item in dict_pfm:
+		print(item)
+		print('>'+item)
+		indent = []
+		for col_index,col_content in enumerate(dict_pfm[item].T):
+			for posi in col_content.tolist():
+				indent.append(len(str(max(posi))))
+		# print(indent)
+		for row_index,row_content in enumerate(dict_pfm[item][:]):
+			# print(row_letter)
+			# print(row_content)
+			# for freq in row_content:
+				# print(freq)
+			row_list= row_content.tolist()
+			# print(row_list)
+			row_letter = nt_rconvert(row_index)
+			print(row_letter +'  [') ,
+			for col_index,spaces in enumerate(indent):
+				# print(spaces)
+				# print(row_list[col_index])
+				# print(spaces),
+				# print(len(str(row_list[0][col_index]))),
+				for i in range(0,spaces-len(str(row_list[0][col_index]))):
+					# print(spaces-len(str(row_list[0][col_index])))
+					if spaces-len(str(row_list[0][col_index])) ==0:
+						continue
+					else:	
+						sys.stdout.write(' '),
+				sys.stdout.write(str(row_list[0][col_index])),
+				sys.stdout.write(' '),
+			sys.stdout.write(']')
+		print('')
+	return ''
+
 
 if __name__ == "__main__":
 	entry_name = sys.argv[1]
@@ -129,14 +197,16 @@ if __name__ == "__main__":
 	handle_fasta = open(fasta_name)
 
 
-	ref_pwm_short = tf_proc(database_content,entry_name,6)
+	ref_pfm = tf_proc_parse(database_content,entry_name,6)
+	# print(database_content)
 	# single_motif = 
 	# print(ref_dict_short)
 	fasta_dict = fasta_parser(handle_fasta)
 	l_kmer = 6
-
 	# print(ref_pwm_short)
 	new_pfm = np.zeros([4,6])
+	print(ref_pfm)
+	print(output_pfm_dict(ref_pfm))
 
 	for read_nmer in fasta_dict:
 		kmers = [ fasta_dict[read_nmer][n:n+l_kmer] for n in range(0,len(fasta_dict[read_nmer])-l_kmer+1)]
@@ -151,7 +221,7 @@ if __name__ == "__main__":
 				best_score = temp_score
 		new_pfm = pfm_writer(new_pfm,best_kmer)
 		# print(best_score)
-	print(ref_pwm_short[entry_name])
+	# print(output_pfm_dict(ref_pwm_short[entry_name]))
 	print(new_pfm)
 		# if best_kmer =='':
 		# 	print(fasta_dict[read_nmer])
