@@ -16,7 +16,8 @@ def find_component(exp_run,database_content,expsum_content):
 	pfm_comp1=''
 	pfm_comp2=''
 	if len(run_detail)==0:
-		print('error')
+		# print('error')
+		pass
 	else:
 		run_name = re.findall('(?<=\,)[A-Za-z-0-9_]*?40N.*?(?=\,)',str(run_detail))
 		# print(run_name)
@@ -25,7 +26,8 @@ def find_component(exp_run,database_content,expsum_content):
 		pfm_reg = '\>.*''\nA.*\nC.*\nG.*\nT.*'
 		pfm_comp1 = re.findall('\>.*'+first_comp+'\nA.*\nC.*\nG.*\nT.*',database_content,re.M|re.I)
 		pfm_comp2 = re.findall('\>.*'+second_comp+'\nA.*\nC.*\nG.*\nT.*',database_content,re.M|re.I)
-	return first_comp,second_comp,pfm_comp1,pfm_comp2
+		# print(first_comp,second_comp)
+		return first_comp,second_comp,pfm_comp1,pfm_comp2
 
 if __name__ == "__main__":
 	cur_dir = os.getcwd()
@@ -43,7 +45,10 @@ if __name__ == "__main__":
 	database_content = handle_database.read()
 
 	for exp_run in exp_list:
-		first_comp,second_comp,pfm_comp1,pfm_comp2 = find_component(exp_run,database_content,expsum_content)
+		if find_component(exp_run,database_content,expsum_content) != None:
+			first_comp,second_comp,pfm_comp1,pfm_comp2 = find_component(exp_run,database_content,expsum_content)
 		if len(pfm_comp1)>0 and len(pfm_comp2)>0:
 			print(exp_run)
-			call(['bash', 'sra_dl_single.sh', exp_run])
+			# call(['bash', 'sra_dl_single.sh', exp_run])
+	handle_expsum.close()
+	handle_database.close()

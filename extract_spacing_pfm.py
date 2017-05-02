@@ -100,6 +100,7 @@ def parse_pfm_dict(fasta_exprun,fasta_dir):
 	new_pfm =np.zeros(np.shape(ref_pwm_short[first_comp]))
 
 	count_run = 0
+	print(len(fasta_dict))
 	for read_nmer in fasta_dict:
 		count_run = count_run + 1
 		if count_run %10000==0:

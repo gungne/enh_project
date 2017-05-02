@@ -35,6 +35,7 @@ def pfm2pwm(pfm):
 		for nt in range(0,4):
 			# print(pfm[nt,pos]/sum(pfm[:,pos]))
 			if pfm[nt,pos] == 0:
+				# avoid 0 in pfm
 				pfm[nt,pos] = sum(pfm[:,pos])*0.01
 
 	for pos in range(0,np.shape(pfm[0,:])[1]):
@@ -150,14 +151,19 @@ def pfm_writer(pfm,kmer):
 		pfm[nt_convert(nt),index] = pfm[nt_convert(nt),index]+1
 	return pfm
 
-def output_pfm_dict(dict_pfm):
+def output_pfm_dict(dict_pfm,file_name,file_dir):
+	file_handle = open(file_dir + file_name, 'w')
 	for item in dict_pfm:
-		print(item)
-		print('>'+item)
+		# print(item)
+		file_handle.write('>'+item+'\n')
 		indent = []
+		dict_pfm[item]= dict_pfm[item]
+		# print(dict_pfm[item])
 		for col_index,col_content in enumerate(dict_pfm[item].T):
-			for posi in col_content.tolist():
-				indent.append(len(str(max(posi))))
+			# print(col_content)
+			posi = col_content.tolist()
+				# print(posi)
+			indent.append(len(str(max(posi))))
 		# print(indent)
 		for row_index,row_content in enumerate(dict_pfm[item][:]):
 			# print(row_letter)
@@ -167,22 +173,24 @@ def output_pfm_dict(dict_pfm):
 			row_list= row_content.tolist()
 			# print(row_list)
 			row_letter = nt_rconvert(row_index)
-			print(row_letter +'  [') ,
+			file_handle.write(row_letter +'  [') ,
 			for col_index,spaces in enumerate(indent):
 				# print(spaces)
 				# print(row_list[col_index])
 				# print(spaces),
 				# print(len(str(row_list[0][col_index]))),
-				for i in range(0,spaces-len(str(row_list[0][col_index]))):
+				# print(row_list[col_index],len(str(row_list[col_index])))
+				for i in range(0,spaces-len(str(row_list[col_index]))):
 					# print(spaces-len(str(row_list[0][col_index])))
-					if spaces-len(str(row_list[0][col_index])) ==0:
+					if spaces-len(str(row_list[col_index])) ==0:
 						continue
 					else:	
-						sys.stdout.write(' '),
-				sys.stdout.write(str(row_list[0][col_index])),
-				sys.stdout.write(' '),
-			sys.stdout.write(']')
-		print('')
+						file_handle.write(' '),
+				file_handle.write(str(long(row_list[col_index]))),
+				file_handle.write(' '),
+			file_handle.write(']\n')
+		file_handle.write('\n')
+	file_handle.close()
 	return ''
 
 

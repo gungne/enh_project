@@ -86,23 +86,30 @@ exp_summary = "ERP008935_info.csv"
 handle_expsum = open(exp_summary)
 expsum_content = handle_expsum.read()
 
-handle_fasta=open(fasta_dir+fasta_exprun + '.fa')
-fasta_dict = extract_motif.fasta_parser(handle_fasta)
 
+
+# download bease on the existing fasta
 first_comp,second_comp,pfm_comp1,pfm_comp2 = find_component(fasta_exprun,database_content,expsum_content)
 # ERR[0-9]*?.*(?=ALX4_ALX4)
 exp_entries=re.findall('ERR[0-9]*?.*'+first_comp+'_'+second_comp,expsum_content)
 for exp_entry in exp_entries:
 	temp_exp = re.findall('ERR[0-9]*',exp_entry)[0]
 	#check is the original selex data was there
-	if os.path.isfile(fasta_dir+temp_exp + '.fa'):
-		pass
-	else:
-		call(['bash', 'sra_dl_single.sh', temp_exp])
 	#check if there is some redundancy, if not generate ref_dict
-	if os.path.isfile(temp_exp + '.fa'):
+	if os.path.isfile('Motif/'+temp_exp + '.fa'):
 		pass
 	else:
+		if os.path.isfile(fasta_dir+temp_exp + '.fa'):
+			pass
+		else:
+			call(['bash', 'sra_dl_single.sh', temp_exp])
 		print(temp_exp)
+		handle_fasta=open(fasta_dir+temp_exp + '.fa')
+		fasta_dict = extract_motif.fasta_parser(handle_fasta)
 		temp_dict = parse_pfm_dict(temp_exp,fasta_dir)
-		extract_motif.output_pfm_dict(temp_dict) > open('Motif/'+temp_exp+'.fa','w')
+		extract_motif.output_pfm_dict(temp_dict,temp_exp+'.fa','Motif/')
+		call(['rm', fasta_dir+temp_exp+'.fa'])
+
+
+handle_expsum.close()
+handle_database.close()
