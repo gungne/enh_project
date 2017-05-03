@@ -10,7 +10,7 @@ if [ -f "$filename" ]
 then
 	echo "$filename found."
 else
-	fastq-dump -A $1 -O /Users/Gungnir/enh_project/CAP_SELEX/ 
+	fastq-dump -A $1 -O $HOME/enh_project/CAP_SELEX/ 
 	echo "create $dir$1.fastq"
 	fastq_to_fasta -v -Q33 -i "$dir$1.fastq" -o "$dir$1.fa"
 	rm "$dir$1.fastq"

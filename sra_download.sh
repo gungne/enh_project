@@ -4,7 +4,7 @@ do
 	var1="ERR"
 	combined="$var1$i"
 	echo $combined
-	fastq-dump -A $combined -O /Users/Gungnir/enh_project/CAP_SELEX 
+	fastq-dump -A $combined -O $HOME/enh_project/CAP_SELEX 
 
 done
 
