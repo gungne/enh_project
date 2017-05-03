@@ -97,10 +97,10 @@ for exp_entry in exp_entries:
 	#check is the original selex data was there
 	#check if there is some redundancy, if not generate ref_dict
 	if os.path.isfile('Motif/'+temp_exp + '.fa'):
-		pass
+		continue
 	else:
 		if os.path.isfile(fasta_dir+temp_exp + '.fa'):
-			pass
+			continue
 		else:
 			call(['bash', 'sra_dl_single.sh', temp_exp])
 		print(temp_exp)
