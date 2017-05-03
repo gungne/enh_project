@@ -2,7 +2,8 @@ import os
 import sys
 import re
 import numpy as np
-import Bio 
+# import Bio 
+import multiprocessing as mp
 import math
 import extract_motif
 from pfm_exist_check import find_component
@@ -44,6 +45,43 @@ def find_best_kmer(pwm,read_nmer,l_kmer):
 			best_score = temp_score
 	return best_kmer_index,best_kmer_orient,best_kmer,best_score
 
+def find_best_kmer_mp(pwm,read_nmer,l_kmer,output):
+	kmers = [ read_nmer[n:n+l_kmer] for n in range(0,len(read_nmer)-l_kmer+1)]
+	best_kmer = ''
+	best_score = 0
+	for index,kmer in enumerate(kmers):
+		temp_score = extract_motif.kmer_score(pwm,kmer)
+		# print(temp_score)
+		if temp_score > best_score:
+		# whatif the score are tied?
+			best_kmer_index = index
+			best_kmer_orient = +1
+			best_kmer = kmer
+			best_score = temp_score
+	for index,kmer in enumerate(kmers):
+		temp_score = extract_motif.kmer_score(pwm,reverse_comp(kmer))
+		# print(temp_score)
+		if temp_score > best_score:
+		# whatif the score are tied?
+			best_kmer_index = index
+			best_kmer_orient = -1
+			best_kmer = reverse_comp(kmer)
+			best_score = temp_score
+	output.put([best_kmer_index,best_kmer_orient])
+
+def tic():
+    #Homemade version of matlab tic and toc functions
+    import time
+    global startTime_for_tictoc
+    startTime_for_tictoc = time.time()
+
+def toc():
+    import time
+    if 'startTime_for_tictoc' in globals():
+        print "Elapsed time is " + str(time.time() - startTime_for_tictoc) + " seconds."
+    else:
+        print "Toc: start time not set"
+
 def nt_convert(char):
 	if char == 'A':
 		row = 0
@@ -76,6 +114,11 @@ def pfm_writer(pfm,kmer):
 def parse_pfm_dict(fasta_exprun,fasta_dir):
 	# fasta_exprun = sys.argv[1] 
 	# fasta_dir = sys.argv[2]
+	output = mp.Queue()
+
+
+
+
 	l_kmer = 6
 	JASPAR_database = "pfm_vertebrates.txt"
 	handle_database = open(JASPAR_database)
@@ -112,13 +155,13 @@ def parse_pfm_dict(fasta_exprun,fasta_dir):
 		best_score = 0
 		fbest_kmer_index,fbest_kmer_orient,fbest_kmer,fbest_score = find_best_kmer(ref_pwm_short[first_comp],fasta_dict[read_nmer],l_kmer)
 		rbest_kmer_index,rbest_kmer_orient,rbest_kmer,rbest_score = find_best_kmer(ref_pwm_short[second_comp],fasta_dict[read_nmer],l_kmer)
-		# if abs(fbest_kmer_orient*fbest_kmer_index-rbest_kmer_orient*rbest_kmer_index)>5+l_kmer or abs(fbest_kmer_orient*fbest_kmer_index-rbest_kmer_orient*rbest_kmer_index)<3:
-		# 	continue
+		if abs(fbest_kmer_index-rbest_kmer_index)>5+l_kmer or abs(fbest_kmer_index-rbest_kmer_index)<3:
+			continue
 		# else:
 			# print(fbest_kmer_orient,rbest_kmer_orient,fbest_kmer_index,rbest_kmer_index)
 		if fbest_kmer_orient == 1 and rbest_kmer_orient == 1:
-			if abs(fbest_kmer_orient*fbest_kmer_index-rbest_kmer_orient*rbest_kmer_index)>5+l_kmer:
-				continue
+			# if abs(fbest_kmer_orient*fbest_kmer_index-rbest_kmer_orient*rbest_kmer_index)>5+l_kmer:
+				# continue
 			if fbest_kmer_index < rbest_kmer_index:
 				spacing = rbest_kmer_index-fbest_kmer_index-l_kmer
 				category_name = first_comp+'::'+second_comp+'_'+'1+2+'+ '_' + str(spacing)
@@ -129,8 +172,8 @@ def parse_pfm_dict(fasta_exprun,fasta_dir):
 				motif = fasta_dict[read_nmer][rbest_kmer_index:fbest_kmer_index+l_kmer] 
 
 		if fbest_kmer_orient == -1 and rbest_kmer_orient == -1:
-			if abs(fbest_kmer_orient*fbest_kmer_index-rbest_kmer_orient*rbest_kmer_index)>5+l_kmer:
-				continue
+			# if abs(fbest_kmer_orient*fbest_kmer_index-rbest_kmer_orient*rbest_kmer_index)>5+l_kmer:
+				# continue
 			if fbest_kmer_index < rbest_kmer_index:
 				spacing = rbest_kmer_index-fbest_kmer_index-l_kmer
 				category_name = first_comp+'::'+second_comp+'_'+'2+1+'+ '_' + str(spacing)
@@ -141,8 +184,8 @@ def parse_pfm_dict(fasta_exprun,fasta_dir):
 				motif = reverse_comp(fasta_dict[read_nmer][rbest_kmer_index:fbest_kmer_index+l_kmer]) 
 
 		if fbest_kmer_orient == 1 and rbest_kmer_orient == -1:
-			if abs(fbest_kmer_orient-rbest_kmer_orient)<3:
-					continue
+			# if abs(fbest_kmer_index-rbest_kmer_index)<3:
+				# continue
 			if fbest_kmer_index < rbest_kmer_index:
 				spacing = rbest_kmer_index-fbest_kmer_index-l_kmer
 				category_name = first_comp+'::'+second_comp+'_'+'1+2-'+ '_' + str(spacing)
@@ -153,8 +196,8 @@ def parse_pfm_dict(fasta_exprun,fasta_dir):
 				motif = fasta_dict[read_nmer][rbest_kmer_index:fbest_kmer_index+l_kmer] 
 
 		if fbest_kmer_orient == -1 and rbest_kmer_orient == 1:
-			if abs(fbest_kmer_orient-rbest_kmer_orient)<3:
-				continue
+			# if abs(fbest_kmer_index-rbest_kmer_index)<3:
+				# continue
 			if fbest_kmer_index > rbest_kmer_index:
 				spacing = fbest_kmer_index-rbest_kmer_index-l_kmer
 				category_name = first_comp+'::'+second_comp+'_'+'1+2-' + '_' + str(spacing)
@@ -169,5 +212,6 @@ def parse_pfm_dict(fasta_exprun,fasta_dir):
 			# print(best_score)
 			new_pfm_dict = pfm_dict_writer(new_pfm_dict, category_name, motif)
 	# print(ref_pwm_short[first_comp])
+	print(new_pfm_dict)
 	return new_pfm_dict
 

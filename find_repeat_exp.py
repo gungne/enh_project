@@ -104,11 +104,13 @@ for exp_entry in exp_entries:
 		else:
 			call(['bash', 'sra_dl_single.sh', temp_exp])
 		print(temp_exp)
-		handle_fasta=open(fasta_dir+temp_exp + '.fa')
+		handle_fasta = open(fasta_dir+temp_exp + '.fa')
 		fasta_dict = extract_motif.fasta_parser(handle_fasta)
 		temp_dict = parse_pfm_dict(temp_exp,fasta_dir)
 		extract_motif.output_pfm_dict(temp_dict,temp_exp+'.fa','Motif/')
+		handle_fasta.close()
 		call(['rm', fasta_dir+temp_exp+'.fa'])
+
 
 
 handle_expsum.close()
