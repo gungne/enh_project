@@ -4,7 +4,7 @@
 #=================================
 
 
-dir="/Users/Gungnir/enh_project/CAP_SELEX/" 
+dir="$HOME/enh_project/CAP_SELEX/" 
 filename="$dir$1.fa"
 if [ -f "$filename" ]
 then
