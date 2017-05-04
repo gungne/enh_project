@@ -100,7 +100,7 @@ for exp_entry in exp_entries:
 		continue
 	else:
 		if os.path.isfile(fasta_dir+temp_exp + '.fa'):
-			continue
+			pass
 		else:
 			call(['bash', 'sra_dl_single.sh', temp_exp])
 		print(temp_exp)

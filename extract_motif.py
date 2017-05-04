@@ -26,7 +26,11 @@ def pfm_parser(entry_name,entry):
 	return entry_name,pfm
 
 def pfm2pwm(pfm):
+	# print(pfm)
+	# print(type(pfm))
 	pwm = np.zeros(np.shape(pfm))
+	# print(pwm)
+	pwm = np.matrix(pwm)				
 	pwm = pwm.astype(float)
 	pfm = pfm.astype(float)
 	# print(pfm)
@@ -42,6 +46,7 @@ def pfm2pwm(pfm):
 		for nt in range(0,4):
 			n_total = sum(pfm[:,pos])
 			pwm[nt,pos] = pfm[nt,pos]/n_total
+	# print(pwm)
 	return pwm 
 
 def shannon_entropy(array_v):
@@ -212,7 +217,7 @@ if __name__ == "__main__":
 	fasta_dict = fasta_parser(handle_fasta)
 	l_kmer = 6
 	# print(ref_pwm_short)
-	new_pfm = np.zeros([4,6])
+	new_pfm = np.zeros((4,6))
 	print(ref_pfm)
 	print(output_pfm_dict(ref_pfm))
 

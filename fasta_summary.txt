@@ -1,1 +1,3 @@
   270924 /Users/Gungnir/enh_project/CAP_SELEX/ERR945849.fa
+    8812 /Users/Gungnir/enh_project/CAP_SELEX/ERR945847.fa
+   16446 /Users/Gungnir/enh_project/CAP_SELEX/ERR945848.fa
