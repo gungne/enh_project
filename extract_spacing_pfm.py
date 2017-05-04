@@ -182,15 +182,17 @@ def parse_pfm_dict(fasta_exprun,fasta_dir):
 		# kmers = [ fasta_dict[read_nmer][n:n+l_kmer] for n in range(0,len(fasta_dict[read_nmer])-l_kmer+1)]
 		best_kmer = ''
 		best_score = 0
-		# fbest_kmer_index,fbest_kmer_orient,fbest_kmer,fbest_score = find_best_kmer(ref_pwm_short[first_comp],fasta_dict[read_nmer],l_kmer)
-		# rbest_kmer_index,rbest_kmer_orient,rbest_kmer,rbest_score = find_best_kmer(ref_pwm_short[second_comp],fasta_dict[read_nmer],l_kmer)
-		f_pwm = np.matrix(ref_pwm_short[first_comp],copy = False)
-		s_pwm = np.matrix(ref_pwm_short[second_comp],copy = False)
+		# tic()
+		fbest_kmer_index,fbest_kmer_orient,fbest_kmer,fbest_score = find_best_kmer(ref_pwm_short[first_comp],fasta_dict[read_nmer],l_kmer)
+		rbest_kmer_index,rbest_kmer_orient,rbest_kmer,rbest_score = find_best_kmer(ref_pwm_short[second_comp],fasta_dict[read_nmer],l_kmer)
+		# toc()
+		# f_pwm = np.matrix(ref_pwm_short[first_comp],copy = False)
+		# s_pwm = np.matrix(ref_pwm_short[second_comp],copy = False)
 		# print(f_pwm)
-		tic()
-		fbest_kmer_index,fbest_kmer_orient = find_best_kmer_mp(f_pwm,fasta_dict[read_nmer],l_kmer)
-		rbest_kmer_index,rbest_kmer_orient = find_best_kmer_mp(s_pwm,fasta_dict[read_nmer],l_kmer)
-		toc()
+		# tic()
+		# fbest_kmer_index,fbest_kmer_orient = find_best_kmer_mp(f_pwm,fasta_dict[read_nmer],l_kmer)
+		# rbest_kmer_index,rbest_kmer_orient = find_best_kmer_mp(s_pwm,fasta_dict[read_nmer],l_kmer)
+		# toc()
 		if abs(fbest_kmer_index-rbest_kmer_index)>5+l_kmer or abs(fbest_kmer_index-rbest_kmer_index)<3:
 			continue
 		# else:
