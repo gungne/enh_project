@@ -7,7 +7,6 @@ import os
 import sys
 import re
 import numpy as np
-# import Bio 
 from subprocess import call
 
 def find_component(exp_run,database_content,expsum_content):

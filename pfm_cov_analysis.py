@@ -2,7 +2,7 @@ import os
 import sys
 import re
 import numpy as np
-import Bio 
+# import Bio 
 import math
 import extract_motif
 from pfm_exist_check import find_component

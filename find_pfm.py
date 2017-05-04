@@ -11,8 +11,6 @@ import os
 import sys
 import re
 import numpy as np
-import Bio 
-from Bio.motifs.jaspar.db import JASPAR5
 
 cur_dir = os.getcwd()
 file_run = sys.argv[1]

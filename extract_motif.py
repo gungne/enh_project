@@ -7,7 +7,6 @@ import os
 import sys
 import re
 import numpy as np
-# import Bio 
 import math
 from subprocess import call
 
