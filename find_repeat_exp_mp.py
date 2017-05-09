@@ -74,12 +74,13 @@ def pfm_writer(pfm,kmer):
 	return pfm
 
 def find_motif_mp(temp_exp):
+	global output_dir
 	##change fasta_dir if needed
 	fasta_dir ='CAP_SELEX/'
 	handle_fasta = open(fasta_dir+temp_exp + '.fa')
 	# fasta_dict = extract_motif.fasta_parser(handle_fasta)
 	temp_dict = parse_pfm_dict_mp(handle_fasta)
-	extract_motif.output_pfm_dict(temp_dict,temp_exp+'.fa','Motif/')
+	extract_motif.output_pfm_dict(temp_dict,temp_exp+'.fa',output_dir)
 	handle_fasta.close()
 	call(['rm', fasta_dir+temp_exp+'.fa'])
 
@@ -192,53 +193,59 @@ def parse_pfm_dict_mp(handle_fasta):
 	print(new_pfm_dict)
 	return new_pfm_dict
 
-fasta_exprun = sys.argv[1] 
-fasta_dir = sys.argv[2]
-l_kmer = 6
-JASPAR_database = "pfm_vertebrates.txt"
-handle_database = open(JASPAR_database)
-database_content = handle_database.read()
-
-exp_summary = "ERP008935_info.csv"
-handle_expsum = open(exp_summary)
-expsum_content = handle_expsum.read()
 
 
+if __name__ == "__main__":
+	global output_dir
+	fasta_exprun = sys.argv[1] 
+	fasta_dir = sys.argv[2]
+	l_kmer = 6
+	JASPAR_database = "pfm_vertebrates.txt"
+	handle_database = open(JASPAR_database)
+	database_content = handle_database.read()
 
-# download bease on the existing fasta
-first_comp,second_comp,pfm_comp1,pfm_comp2 = find_component(fasta_exprun,database_content,expsum_content)
-# ERR[0-9]*?.*(?=ALX4_ALX4)
-exp_entries=re.findall('ERR[0-9]*?.*'+first_comp+'_'+second_comp,expsum_content)
-exp_list = []
-for exp_entry in exp_entries:
-	temp_exp = re.findall('ERR[0-9]*',exp_entry)[0]
-	#check is the original selex data was there
-	#check if there is some redundancy, if not generate ref_dict
-	if os.path.isfile('Motif/'+temp_exp + '.fa'):
-		continue
-	else:
-		if os.path.isfile(fasta_dir+temp_exp + '.fa'):
-			pass
+	exp_summary = "ERP008935_info.csv"
+	handle_expsum = open(exp_summary)
+	expsum_content = handle_expsum.read()
+
+	output_dir = 'Motif/'
+	if len(sys.argv) > 3:
+    	output_dir = sys.argv[3]
+
+	# download bease on the existing fasta
+	first_comp,second_comp,pfm_comp1,pfm_comp2 = find_component(fasta_exprun,database_content,expsum_content)
+	# ERR[0-9]*?.*(?=ALX4_ALX4)
+	exp_entries=re.findall('ERR[0-9]*?.*'+first_comp+'_'+second_comp,expsum_content)
+	exp_list = []
+	for exp_entry in exp_entries:
+		temp_exp = re.findall('ERR[0-9]*',exp_entry)[0]
+		#check is the original selex data was there
+		#check if there is some redundancy, if not generate ref_dict
+		if os.path.isfile(output_dir+temp_exp + '.fa'):
+			continue
 		else:
-			call(['bash', 'sra_dl_single.sh', temp_exp])
-		exp_list.append(temp_exp)
+			if os.path.isfile(fasta_dir+temp_exp + '.fa'):
+				pass
+			else:
+				call(['bash', 'sra_dl_single.sh', temp_exp])
+			exp_list.append(temp_exp)
 
-pool = Pool(4)	
-
-
-para = pool.map(find_motif_mp,exp_list)
-
-pool.close()
-## 
-# fasta_dir 
-# handle_fasta = open(fasta_dir+temp_exp + '.fa')
-# # fasta_dict = extract_motif.fasta_parser(handle_fasta)
-# temp_dict = parse_pfm_dict_mp(handle_fasta)
-# extract_motif.output_pfm_dict(temp_dict,temp_exp+'.fa','Motif/')
-# handle_fasta.close()
-# call(['rm', fasta_dir+temp_exp+'.fa'])
+	pool = Pool(4)	
 
 
+	para = pool.map(find_motif_mp,exp_list)
 
-handle_expsum.close()
-handle_database.close()
+	pool.close()
+	## 
+	# fasta_dir 
+	# handle_fasta = open(fasta_dir+temp_exp + '.fa')
+	# # fasta_dict = extract_motif.fasta_parser(handle_fasta)
+	# temp_dict = parse_pfm_dict_mp(handle_fasta)
+	# extract_motif.output_pfm_dict(temp_dict,temp_exp+'.fa','Motif/')
+	# handle_fasta.close()
+	# call(['rm', fasta_dir+temp_exp+'.fa'])
+
+
+
+	handle_expsum.close()
+	handle_database.close()
