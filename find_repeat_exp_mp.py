@@ -208,11 +208,16 @@ if __name__ == "__main__":
 	handle_expsum = open(exp_summary)
 	expsum_content = handle_expsum.read()
 
+	##default output_dir 
 	output_dir = 'Motif/'
+
+	#set output_dir to specific tf and mkdir if not exist
 	if len(sys.argv) > 3:
     	output_dir = sys.argv[3] + /
     if not os.path.exists(output_dir):
     	os.makedirs(output_dir)
+
+
 	# download bease on the existing fasta
 	first_comp,second_comp,pfm_comp1,pfm_comp2 = find_component(fasta_exprun,database_content,expsum_content)
 	# ERR[0-9]*?.*(?=ALX4_ALX4)
