@@ -8,6 +8,8 @@ from pfm_exist_check import find_component
 from subprocess import call
 from multiprocessing import Pool
 import extract_spacing_pfm 
+
+
 def reverse_comp(kmer):
 	kmer_r=''
 	for nt in kmer:
@@ -213,7 +215,7 @@ if __name__ == "__main__":
 
 	#set output_dir to specific tf and mkdir if not exist
 	if len(sys.argv) > 3:
-		output_dir = sys.argv[3] + /
+		output_dir = sys.argv[3] + "/"
     if not os.path.exists(output_dir):
     	os.makedirs(output_dir)
 
