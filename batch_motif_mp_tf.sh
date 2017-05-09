@@ -8,7 +8,7 @@ echo 'index done'
 for i in ${run_dl_list}
 do
 # fastq-dump -A $i -O /Users/Gungnir/enh_project/CAP_SELEX 
-python find_repeat_exp_mp.py $i CAP_SELEX/
+python find_repeat_exp_mp.py $i CAP_SELEX/ $1
 
 
 done
