@@ -216,8 +216,8 @@ if __name__ == "__main__":
 	#set output_dir to specific tf and mkdir if not exist
 	if len(sys.argv) > 3:
 		output_dir = sys.argv[3] + "/"
-    if not os.path.exists(output_dir):
-    	os.makedirs(output_dir)
+	if not os.path.exists(output_dir):
+		os.makedirs(output_dir)
 
 
 	# download bease on the existing fasta
