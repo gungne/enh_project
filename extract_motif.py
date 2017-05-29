@@ -91,6 +91,24 @@ def tf_proc(database_content,entry,l_kmer):
 		ref_dict_short[tf_name] = short_tf_pwm
 	return ref_dict_short
 
+def tf_proc_all(database_content):
+	ref_dict = dict()
+	# if type(entry) is list:
+	# 	pass
+	# else:
+	# 	entry=[entry]
+	entry = re.findall('(?=\>).*',database_content)
+	for entry_name in entry:
+		entry_name = re.sub('>','',entry_name) 
+		if '+' in entry_name:
+			entry_name = re.sub(r'\+','\\+',entry_name) 
+	# print(entry_name)
+		# print(database_content)
+		pfm_comp = re.findall('\>.*'+entry_name+'\nA.*\nC.*\nG.*\nT.*',database_content,re.M|re.I)[0]
+		tf_name,tf_pfm = pfm_parser(entry_name,pfm_comp)
+		ref_dict[tf_name] = pfm2pwm(tf_pfm) 
+	return ref_dict
+
 def tf_proc_parse(database_content,entry,l_kmer):
 	ref_dict = dict()
 	# ref_dict_short = dict()
@@ -102,10 +120,26 @@ def tf_proc_parse(database_content,entry,l_kmer):
 		print(entry_name)
 		pfm_comp = re.findall('\>.*'+entry_name+'\nA.*\nC.*\nG.*\nT.*',database_content,re.M|re.I)[0]
 		tf_name,tf_pfm = pfm_parser(entry_name,pfm_comp)
-		ref_dict[tf_name] = tf_pfm 
-		# short_tf_pwm = shannon_trimmer(pfm2pwm(tf_pfm),l_kmer) 
-		# ref_dict_short[tf_name] = short_tf_pwm
+		ref_dict[tf_name] = pfm2pwm(tf_pfm) 
+		short_tf_pwm = shannon_trimmer(pfm2pwm(tf_pfm),l_kmer) 
+		ref_dict_short[tf_name] = short_tf_pwm
 	return ref_dict
+
+def tf_proc_parse_s(database_content,entry,l_kmer):
+	ref_dict = dict()
+	ref_dict_short = dict()
+	if type(entry) is list:
+		pass
+	else:
+		entry=[entry]
+	for entry_name in entry:
+		print(entry_name)
+		pfm_comp = re.findall('\>.*'+entry_name+'\nA.*\nC.*\nG.*\nT.*',database_content,re.M|re.I)[0]
+		tf_name,tf_pfm = pfm_parser(entry_name,pfm_comp)
+		ref_dict[tf_name] = pfm2pwm(tf_pfm) 
+		short_tf_pwm = shannon_trimmer(pfm2pwm(tf_pfm),l_kmer) 
+		ref_dict_short[tf_name] = short_tf_pwm
+	return ref_dict_short
 
 def fasta_parser(file):
 	fasta_dict={}
@@ -149,6 +183,7 @@ def kmer_score(pwm,kmer):
 			total_score = total_score * pwm[nt_convert(nt),index]*100
 			# print(total_score)
 	return total_score
+
 def pfm_writer(pfm,kmer):
 	for index,nt in enumerate(kmer):
 		# print(nt_convert(nt),index)

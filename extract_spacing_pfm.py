@@ -38,6 +38,60 @@ def kmer_score_mp(kmer_matrix,pwm_input):
 	# print(total_score)
 	return total_score
 
+def find_best_kmer_chip(pwm,read_nmer):
+	l_kmer =  np.shape(pwm)[1]
+	# print(l_kmer)
+	kmers = [read_nmer[n:n+l_kmer].upper() for n in range(0,len(read_nmer)-l_kmer+1)]
+	# print(kmers)
+	best_broadpeak = []
+	# try not to use threshold method
+	thres_score = 40**6
+	best_score = 0 
+	best_kmer = ''
+	# best_kmer_index = 0
+	# best_kmer_orient = '+'
+	for index,kmer in enumerate(kmers):
+		temp_score = extract_motif.kmer_score(pwm,kmer)
+		if temp_score > thres_score:
+		# whatif the score are tied?
+			# best_kmer_index = index
+			# best_kmer_orient = +1
+			if index>10 and index<len(read_nmer)-10 :
+				broad_peak = read_nmer[index-10:index+l_kmer+10]
+				if  len(broad_peak) ==26:
+					best_broadpeak = best_broadpeak+[broad_peak.upper()]
+					
+
+		if temp_score > best_score:
+		# whatif the score are tied?
+			if index>10 and index<len(read_nmer)-10 :
+				best_score = temp_score
+				best_kmer = read_nmer[index-10:index+l_kmer+10]
+
+	for index,kmer in enumerate(kmers):
+		temp_score = extract_motif.kmer_score(pwm,reverse_comp(kmer))
+		# print(temp_score)
+
+		if temp_score > thres_score:
+		# whatif the score are tied?
+			if index>10 and index<len(read_nmer)-10 :
+				broad_peak = read_nmer[index-10:index+l_kmer+10]
+				if  len(broad_peak) ==26:
+					best_broadpeak = best_broadpeak + [reverse_comp(broad_peak).upper()]
+			# best_score = temp_score
+
+		if temp_score > best_score:
+		# whatif the score are tied?
+			if index>10 and index<len(read_nmer)-10 :
+				best_score = temp_score
+				best_kmer = reverse_comp(read_nmer[index-10:index+l_kmer+10])
+	if best_broadpeak == []:
+		if len(best_kmer) == 26:
+			best_broadpeak = best_broadpeak + [best_kmer.upper()]
+
+	return best_broadpeak
+
+
 def find_best_kmer(pwm,read_nmer,l_kmer):
 	kmers = [ read_nmer[n:n+l_kmer] for n in range(0,len(read_nmer)-l_kmer+1)]
 	best_kmer = ''
